@@ -37,8 +37,12 @@ package com.raywenderlich.android.kotlincoroutinesfundamentals
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.raywenderlich.android.kotlincoroutinesfundamentals.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -52,12 +56,16 @@ class MainActivity : AppCompatActivity() {
         // Switch to AppTheme for displaying the activity
         setTheme(R.style.AppTheme)
 
+        // Create binding.
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val mainLooper = mainLooper
-        Thread {
+        // Download image in the background.
+        Log.d("TaskThread", Thread.currentThread().name)
+        GlobalScope.launch(context = Dispatchers.IO) {
+            Log.d("TaskThread", Thread.currentThread().name)
+
             val imageUrl =
                 URL("https://as1.ftcdn.net/v2/jpg/07/07/93/34/1000_F_707933423_7AWpZCFRAr7LTJdmDlbFZk7gEiDToq7H.jpg")
             val connection = imageUrl.openConnection() as HttpURLConnection
@@ -67,7 +75,11 @@ class MainActivity : AppCompatActivity() {
             val inputStream = connection.getInputStream()
             val bitmap = BitmapFactory.decodeStream(inputStream)
 
-            Handler(mainLooper).post { binding.image.setImageBitmap(bitmap) }
-        }.start()
+            launch(Dispatchers.Main) {
+                Log.d("TaskThread", Thread.currentThread().name)
+
+                binding.image.setImageBitmap(bitmap)
+            }
+        }
     }
 }
