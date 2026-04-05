@@ -34,21 +34,40 @@
 
 package com.raywenderlich.android.kotlincoroutinesfundamentals
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
+import com.raywenderlich.android.kotlincoroutinesfundamentals.databinding.ActivityMainBinding
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * Main Screen
  */
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    // Switch to AppTheme for displaying the activity
-    setTheme(R.style.AppTheme)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // Switch to AppTheme for displaying the activity
+        setTheme(R.style.AppTheme)
 
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_main)
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-    // Your code
-  }
+        val mainLooper = mainLooper
+        Thread {
+            val imageUrl =
+                URL("https://as1.ftcdn.net/v2/jpg/07/07/93/34/1000_F_707933423_7AWpZCFRAr7LTJdmDlbFZk7gEiDToq7H.jpg")
+            val connection = imageUrl.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+
+            val inputStream = connection.getInputStream()
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+
+            Handler(mainLooper).post { binding.image.setImageBitmap(bitmap) }
+        }.start()
+    }
 }
